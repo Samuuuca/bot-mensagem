@@ -1,0 +1,4 @@
+node_modules
+.wwebjs_cache
+src/credencials/credencial.json
+src/credencials/token.json
