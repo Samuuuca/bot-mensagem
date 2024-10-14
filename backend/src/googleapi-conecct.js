@@ -9,6 +9,7 @@ const SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis
 
 const TOKEN_PATH = path.resolve(__dirname, './credencials/token.json');
 const CREDENTIALS_PATH = path.resolve(__dirname, './credencials/credencial.json');
+const SPREADSHEET_ID = '1r8i2BTXvqZX8s8RaEEYDjx4ewkpwv5salsEbKpqKYwk'; //  1ztgYzsHmNzsM_pkhPuLAjWcgXqZ5HJx6YHcFvSkZVWU
 
 async function loadSavedCredentialsIfExist() {
   try {
@@ -63,18 +64,15 @@ async function planilhaEspecifica(authClient) {
   let csvFormat = '';
   const sheet = google.sheets({ version: 'v4', auth: authClient });
   try {
-
     const response = await sheet.spreadsheets.values.get({
-      spreadsheetId: '1r8i2BTXvqZX8s8RaEEYDjx4ewkpwv5salsEbKpqKYwk',//  1ztgYzsHmNzsM_pkhPuLAjWcgXqZ5HJx6YHcFvSkZVWU 1r8i2BTXvqZX8s8RaEEYDjx4ewkpwv5salsEbKpqKYwk
+      spreadsheetId: SPREADSHEET_ID,
       range: `A1:Z`
     })
-
     const linhas = response.data.values
 
     linhas.forEach((linha) => {
       csvFormat += linha.join(',') + '\n';
     })
-
     const caminhoArquivo = `./src/csv/contatosParaAvisar.csv`
     fs.writeFile(caminhoArquivo, csvFormat)
 
@@ -86,9 +84,31 @@ async function planilhaEspecifica(authClient) {
   }
 }
 
+async function updatePlanilha(authClient , data) {
+
+  const sheet = google.sheets({version: 'v4', auth: authClient});
+  
+  const resource = {
+    data,
+    valueInputOption: 'USER_ENTERED',
+  };
+  try{
+    const result = await sheet.spreadsheets.values.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      resource,
+    })
+    console.log('%d cells updated.', result.data.updatedCells);
+  }
+  catch (err){
+    console.log(err)
+  }
+
+}
+
 module.exports = {
   authorize,
-  planilhaEspecifica
+  planilhaEspecifica,
+  updatePlanilha
 }
 
 
